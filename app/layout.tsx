@@ -20,10 +20,41 @@ const sourceSerif = Source_Serif_4({
   style: ["normal", "italic"],
 });
 
+const SITE_TITLE = "Dropout — Watch a neural network overfit, then watch it dream.";
+const SITE_DESC =
+  "An interactive essay on Erik Hoel's Overfitted Brain Hypothesis. Train a network, watch it overfit, and watch dreams put it right.";
+
 export const metadata: Metadata = {
-  title: "Dropout — Watch a neural network overfit, then watch it dream.",
-  description:
-    "An interactive essay on Erik Hoel's Overfitted Brain Hypothesis. Train a network, watch it overfit, and watch dreams put it right.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://dropout.local",
+  ),
+  title: SITE_TITLE,
+  description: SITE_DESC,
+  authors: [{ name: "skalkii" }],
+  keywords: [
+    "Overfitted Brain Hypothesis",
+    "Erik Hoel",
+    "dreams",
+    "machine learning",
+    "regularization",
+    "dropout",
+    "TensorFlow.js",
+    "interactive essay",
+  ],
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESC,
+    type: "article",
+    siteName: "Dropout",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESC,
+    images: ["/og-image.png"],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
