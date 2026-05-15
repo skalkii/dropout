@@ -1,30 +1,65 @@
 @import "tailwindcss";
 
+/* Claude-inspired palette: warm cream + coral accent.
+   Light by default; pairs with prefers-color-scheme: dark below. */
 :root {
-  --color-bg: #0a0c1a;
-  --color-fg: #e8e2d1;
-  --color-muted: #8b8a86;
-  --color-panel: #11142b;
-  --color-border: #1f2440;
-  --color-accent: #c9a86a;
-  --color-accent-soft: rgba(201, 168, 106, 0.18);
-  --color-danger: #d97757;
-  --color-success: #7ab48b;
+  --color-bg: #faf9f5;
+  --color-bg-elev: #ffffff;
+  --color-fg: #2c2a26;
+  --color-fg-soft: #4a4843;
+  --color-muted: #857f76;
+  --color-panel: #f0ede4;
+  --color-border: #e0dbcf;
+  --color-border-strong: #c9c2b1;
+  --color-accent: #c96442;
+  --color-accent-soft: rgba(201, 100, 66, 0.12);
+  --color-on-accent: #ffffff;
+  --color-success: #5a8a6b;
+  --color-success-soft: rgba(90, 138, 107, 0.18);
+  --color-danger: #b04a2f;
+
+  --shadow-card: 0 1px 2px rgba(28, 26, 22, 0.04), 0 4px 16px rgba(28, 26, 22, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #262624;
+    --color-bg-elev: #2f2e2c;
+    --color-fg: #f0ede4;
+    --color-fg-soft: #d8d3c5;
+    --color-muted: #9a9489;
+    --color-panel: #2f2e2c;
+    --color-border: #3e3b36;
+    --color-border-strong: #524e47;
+    --color-accent: #d97757;
+    --color-accent-soft: rgba(217, 119, 87, 0.18);
+    --color-on-accent: #1a1815;
+    --color-success: #7ab48b;
+    --color-success-soft: rgba(122, 180, 139, 0.18);
+    --color-danger: #d97757;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
 }
 
 @theme inline {
   --color-background: var(--color-bg);
+  --color-bg-elev: var(--color-bg-elev);
   --color-foreground: var(--color-fg);
+  --color-foreground-soft: var(--color-fg-soft);
   --color-muted: var(--color-muted);
   --color-panel: var(--color-panel);
   --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
   --color-accent: var(--color-accent);
   --color-accent-soft: var(--color-accent-soft);
-  --color-danger: var(--color-danger);
+  --color-on-accent: var(--color-on-accent);
   --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --color-danger: var(--color-danger);
 
   --font-serif: var(--font-source-serif);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -35,11 +70,13 @@ body {
 }
 
 body {
-  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif), Iowan Old Style, Apple Garamond, Baskerville,
+    Georgia, "Times New Roman", serif;
   font-feature-settings: "kern", "liga", "calt", "onum";
-  font-size: 1.0625rem;
-  line-height: 1.7;
+  font-size: clamp(16px, 0.92rem + 0.18vw, 18px);
+  line-height: 1.72;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -47,6 +84,7 @@ body {
   color: var(--color-fg);
 }
 
+/* Honor reduced-motion preference site-wide. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
