@@ -54,7 +54,7 @@ export function ProgressRail() {
                   className={`inline-block h-[2px] rounded-full transition-all duration-300 ${
                     isActive
                       ? "w-10 bg-accent"
-                      : "w-5 bg-border-strong/70 group-hover:w-7 group-hover:bg-foreground/40"
+                      : "w-5 bg-border-strong group-hover:w-7 group-hover:bg-foreground/50"
                   }`}
                 />
                 <span className={isActive ? "text-accent" : undefined}>

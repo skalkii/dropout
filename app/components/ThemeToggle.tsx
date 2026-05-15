@@ -40,7 +40,7 @@ export function ThemeToggle() {
     <div
       role="radiogroup"
       aria-label="Theme"
-      className="inline-flex rounded-full border border-border bg-bg-elev p-0.5"
+      className="inline-flex rounded-full border border-border bg-bg-elev p-1 shadow-[inset_0_0_0_1px_var(--color-bg-elev)]"
     >
       {ITEMS.map((it) => {
         const active = mode === it.mode;
@@ -55,8 +55,8 @@ export function ThemeToggle() {
             onClick={() => setMode(it.mode)}
             className={`grid h-7 w-7 place-items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
               active
-                ? "bg-panel text-accent"
-                : "text-muted hover:text-foreground"
+                ? "bg-accent text-on-accent shadow-sm"
+                : "text-muted hover:bg-panel hover:text-foreground"
             }`}
           >
             {it.icon}
