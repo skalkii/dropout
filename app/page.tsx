@@ -209,10 +209,39 @@ export default function Home() {
               unsettled; and the way deep networks generalize is itself
               still under active investigation.
             </p>
-            <p className="rounded-sm border border-dashed border-border/70 bg-panel/40 p-4 font-mono text-xs uppercase tracking-widest text-muted">
-              {`{{ACT_5_PROSE}}`} — author to write the closing reflection
-              here.
+            <p>
+              The strongest criticism is that the parallel may be too neat.
+              Regularization in machine learning runs during training, on
+              labelled inputs, against an explicit loss. Dreaming runs
+              offline, on no inputs at all, against no obvious objective.
+              The brain&apos;s learning rule is not gradient descent in any
+              tidy sense, and the cost function it might be minimizing — if
+              there is one — does not behave like a deep-network loss. A
+              structural analogy is not a mechanistic one, and the gap
+              between the two is exactly the gap a future theory will have
+              to close.
             </p>
+            <p>
+              Even granting all of that, something in the framing seems
+              worth keeping. Until recently the bizarreness of dreams was
+              treated almost universally as a problem — the phenomenon any
+              theory of dreaming had to explain away. The Overfitted Brain
+              Hypothesis, whatever the eventual verdict on its specifics,
+              reframes the bizarreness as evidence <em>of</em> a function
+              rather than against one. If dreams were faithful replays,
+              they would not work. The distortion is the work.
+            </p>
+            <p>
+              That reframing is the part most likely to survive. The
+              structural parallel between a brain that over-specializes on
+              the day&apos;s experience and a network that over-specializes
+              on its training set is real even if dreaming turns out to do
+              something other than fix it. Real enough, anyway, that
+              watching a small network overfit and then watching it dream
+              feels — to one reader, at least — like looking at the inside
+              of an idea.
+            </p>
+            <p>The rest is yours.</p>
           </Prose>
         </Act>
 
