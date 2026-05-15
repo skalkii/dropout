@@ -1,12 +1,9 @@
 "use client";
 
+import * as Comlink from "comlink";
 import { useCallback, useEffect, useRef, useState } from "react";
-import * as tf from "@tensorflow/tfjs";
-import { makeSpirals, trainValSplit, type Split } from "@/lib/ml/data";
-import { buildMLP, safeDispose } from "@/lib/ml/model";
-import { train } from "@/lib/ml/train";
+import { spawnTrainer, type TrainerHandle } from "@/lib/ml/workerClient";
 import {
-  computeBoundary,
   paintBoundary,
   paintPoints,
   readThemeColor,
@@ -15,94 +12,106 @@ import { Button } from "../ui/Button";
 
 const BOUNDS = { xMin: -6, xMax: 6, yMin: -6, yMax: 6 };
 const RES = 80;
+const EPOCHS = 200;
 
 export function SpiralClassifier() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const modelRef = useRef<tf.LayersModel | null>(null);
-  const splitRef = useRef<Split | null>(null);
-  const stopRef = useRef(false);
+  const trainerRef = useRef<TrainerHandle | null>(null);
+  const pointsRef = useRef<{ xs: number[][]; ys: number[] } | null>(null);
   const [epoch, setEpoch] = useState(0);
   const [loss, setLoss] = useState<number | null>(null);
   const [valLoss, setValLoss] = useState<number | null>(null);
   const [running, setRunning] = useState(false);
   const [ready, setReady] = useState(false);
-  const epochsTarget = 200;
 
-  const drawBoundary = useCallback(async () => {
+  const paint = useCallback((probs: Float32Array) => {
     const canvas = canvasRef.current;
-    const model = modelRef.current;
-    const split = splitRef.current;
-    if (!canvas || !model || !split) return;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const grid = await computeBoundary(model, RES, BOUNDS);
+    const grid = {
+      width: RES,
+      height: RES,
+      ...BOUNDS,
+      probs,
+    };
     ctx.fillStyle = readThemeColor("--color-bg-elev", "#ffffff");
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     paintBoundary(ctx, grid);
-    paintPoints(ctx, split.train.xs, split.train.ys, BOUNDS);
+    const pts = pointsRef.current;
+    if (pts) paintPoints(ctx, pts.xs, pts.ys, BOUNDS);
   }, []);
 
+  const setup = useCallback(async () => {
+    const handle = trainerRef.current;
+    if (!handle) return;
+    await handle.proxy.setup(
+      { hiddenLayers: 4, hiddenUnits: 64 },
+      { type: "spirals", perClass: 150, noise: 0.2, valFrac: 0.25 },
+    );
+    pointsRef.current = await handle.proxy.getTrainPoints();
+    const probs = await handle.proxy.predictGrid(RES, BOUNDS);
+    paint(probs);
+  }, [paint]);
+
   const reset = useCallback(async () => {
-    stopRef.current = true;
-    modelRef.current = safeDispose(modelRef.current);
-    modelRef.current = buildMLP({ hiddenLayers: 4, hiddenUnits: 64 });
-    splitRef.current = trainValSplit(makeSpirals(150, 0.2), 0.25);
-    stopRef.current = false;
+    if (!trainerRef.current) return;
+    trainerRef.current.proxy.stop();
     setEpoch(0);
     setLoss(null);
     setValLoss(null);
-    await drawBoundary();
-  }, [drawBoundary]);
+    await setup();
+  }, [setup]);
 
   useEffect(() => {
     let cancelled = false;
+    const handle = spawnTrainer();
+    trainerRef.current = handle;
     (async () => {
-      try {
-        await tf.setBackend("webgl");
-      } catch {
-        await tf.setBackend("cpu");
-      }
-      await tf.ready();
+      await handle.proxy.setup(
+        { hiddenLayers: 4, hiddenUnits: 64 },
+        { type: "spirals", perClass: 150, noise: 0.2, valFrac: 0.25 },
+      );
+      pointsRef.current = await handle.proxy.getTrainPoints();
+      const probs = await handle.proxy.predictGrid(RES, BOUNDS);
       if (cancelled) return;
-      await reset();
+      paint(probs);
       setReady(true);
     })();
     return () => {
       cancelled = true;
-      stopRef.current = true;
-      modelRef.current = safeDispose(modelRef.current);
+      handle.proxy.stop();
+      handle.proxy.dispose();
+      handle.terminate();
+      trainerRef.current = null;
     };
-  }, [reset]);
+  }, [paint]);
 
   const handleTrain = async () => {
-    const model = modelRef.current;
-    const split = splitRef.current;
-    if (!model || !split || running) return;
+    if (running || !trainerRef.current) return;
     setRunning(true);
-    stopRef.current = false;
     try {
-      await train(model, split.train, split.val, {
-        epochs: epochsTarget,
-        batchSize: 32,
-        snapshotEvery: 5,
-        shouldStop: () => stopRef.current,
-        onEpoch: (u) => {
+      await trainerRef.current.proxy.train(
+        EPOCHS,
+        32,
+        5,
+        Comlink.proxy((u) => {
           setEpoch(u.epoch + 1);
           setLoss(u.loss);
           setValLoss(u.valLoss);
-        },
-        onSnapshot: async () => {
-          await drawBoundary();
-        },
-      });
-      await drawBoundary();
+        }),
+        Comlink.proxy((probs: Float32Array) => {
+          paint(probs);
+        }),
+        { resolution: RES, bounds: BOUNDS },
+      );
     } finally {
       setRunning(false);
     }
   };
 
   const handleStop = () => {
-    stopRef.current = true;
+    trainerRef.current?.proxy.stop();
   };
 
   return (
@@ -143,13 +152,17 @@ export function SpiralClassifier() {
               Stop
             </Button>
           )}
-          <Button variant="ghost" onClick={reset} disabled={running || !ready}>
+          <Button
+            variant="ghost"
+            onClick={() => void reset()}
+            disabled={running || !ready}
+          >
             Reset
           </Button>
         </div>
 
         <dl className="flex gap-5 font-mono text-[11px] uppercase tracking-widest text-muted">
-          <Stat label="epoch" value={`${epoch}/${epochsTarget}`} />
+          <Stat label="epoch" value={`${epoch}/${EPOCHS}`} />
           <Stat label="loss" value={loss?.toFixed(3) ?? "—"} />
           <Stat label="val" value={valLoss?.toFixed(3) ?? "—"} />
         </dl>

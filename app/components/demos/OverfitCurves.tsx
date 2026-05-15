@@ -2,12 +2,10 @@
 
 import "uplot/dist/uPlot.min.css";
 
+import * as Comlink from "comlink";
 import { useCallback, useEffect, useRef, useState } from "react";
 import uPlot, { type AlignedData, type Options } from "uplot";
-import * as tf from "@tensorflow/tfjs";
-import { makeSpirals, trainValSplit, type Split } from "@/lib/ml/data";
-import { buildMLP, safeDispose } from "@/lib/ml/model";
-import { train } from "@/lib/ml/train";
+import { spawnTrainer, type TrainerHandle } from "@/lib/ml/workerClient";
 import { readThemeColor } from "@/lib/viz/decisionBoundary";
 import { Button } from "../ui/Button";
 import { Slider } from "../ui/Slider";
@@ -18,9 +16,7 @@ export function OverfitCurves() {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const plotRef = useRef<uPlot | null>(null);
   const dataRef = useRef<AlignedData>([[], [], []]);
-  const modelRef = useRef<tf.LayersModel | null>(null);
-  const splitRef = useRef<Split | null>(null);
-  const stopRef = useRef(false);
+  const trainerRef = useRef<TrainerHandle | null>(null);
   const [hidden, setHidden] = useState(64);
   const [running, setRunning] = useState(false);
   const [ready, setReady] = useState(false);
@@ -33,16 +29,13 @@ export function OverfitCurves() {
     const axisColor = readThemeColor("--color-muted", "#857f76");
     const gridColor = readThemeColor("--color-border", "#e0dbcf");
     const trainColor = "#4a6b8a";
-    const valColor = readThemeColor("--color-accent", "#c96442");
+    const valColor = readThemeColor("--color-accent", "#b85638");
     const opts: Options = {
       width: Math.max(280, Math.floor(rect.width)),
       height: 240,
       padding: [12, 16, 8, 16],
       legend: { show: true, live: false },
-      scales: {
-        x: { time: false },
-        y: { auto: true },
-      },
+      scales: { x: { time: false }, y: { auto: true } },
       axes: [
         {
           stroke: axisColor,
@@ -63,11 +56,7 @@ export function OverfitCurves() {
       ],
       series: [
         { label: "epoch" },
-        {
-          label: "train",
-          stroke: trainColor,
-          width: 1.75,
-        },
+        { label: "train", stroke: trainColor, width: 1.75 },
         {
           label: "validation",
           stroke: valColor,
@@ -79,47 +68,48 @@ export function OverfitCurves() {
     plotRef.current = new uPlot(opts, dataRef.current, hostRef.current);
   }, []);
 
-  const reset = useCallback(() => {
-    stopRef.current = true;
-    modelRef.current = safeDispose(modelRef.current);
-    modelRef.current = buildMLP({
-      hiddenLayers: 4,
-      hiddenUnits: hidden,
-    });
-    splitRef.current = trainValSplit(makeSpirals(150, 0.2), 0.3);
-    stopRef.current = false;
+  const reset = useCallback(async () => {
+    const handle = trainerRef.current;
+    if (!handle) return;
+    handle.proxy.stop();
     setEpoch(0);
     dataRef.current = [[], [], []];
     plotRef.current?.setData(dataRef.current);
+    await handle.proxy.setup(
+      { hiddenLayers: 4, hiddenUnits: hidden },
+      { type: "spirals", perClass: 150, noise: 0.2, valFrac: 0.3 },
+    );
   }, [hidden]);
 
   useEffect(() => {
     let cancelled = false;
+    const handle = spawnTrainer();
+    trainerRef.current = handle;
     (async () => {
-      try {
-        await tf.setBackend("webgl");
-      } catch {
-        await tf.setBackend("cpu");
-      }
-      await tf.ready();
-      if (cancelled) return;
       buildPlot();
-      reset();
+      await handle.proxy.setup(
+        { hiddenLayers: 4, hiddenUnits: hidden },
+        { type: "spirals", perClass: 150, noise: 0.2, valFrac: 0.3 },
+      );
+      if (cancelled) return;
       setReady(true);
     })();
     return () => {
       cancelled = true;
-      stopRef.current = true;
+      handle.proxy.stop();
+      handle.proxy.dispose();
+      handle.terminate();
+      trainerRef.current = null;
       plotRef.current?.destroy();
-      modelRef.current = safeDispose(modelRef.current);
     };
-  }, [buildPlot, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!hostRef.current) return;
     const obs = new ResizeObserver(() => {
       if (!hostRef.current || !plotRef.current) return;
-      const w = Math.max(320, Math.floor(hostRef.current.getBoundingClientRect().width));
+      const w = Math.max(280, Math.floor(hostRef.current.getBoundingClientRect().width));
       plotRef.current.setSize({ width: w, height: 240 });
     });
     obs.observe(hostRef.current);
@@ -127,18 +117,15 @@ export function OverfitCurves() {
   }, []);
 
   const handleTrain = async () => {
-    if (running) return;
-    reset();
+    if (running || !trainerRef.current) return;
+    await reset();
     setRunning(true);
-    stopRef.current = false;
-    const model = modelRef.current!;
-    const split = splitRef.current!;
     try {
-      await train(model, split.train, split.val, {
-        epochs: EPOCHS,
-        batchSize: 32,
-        shouldStop: () => stopRef.current,
-        onEpoch: (u) => {
+      await trainerRef.current.proxy.train(
+        EPOCHS,
+        32,
+        EPOCHS + 1, // never snapshot
+        Comlink.proxy((u) => {
           const xs = dataRef.current[0] as number[];
           const ts = dataRef.current[1] as number[];
           const vs = dataRef.current[2] as number[];
@@ -147,8 +134,10 @@ export function OverfitCurves() {
           vs.push(u.valLoss);
           plotRef.current?.setData(dataRef.current);
           setEpoch(u.epoch + 1);
-        },
-      });
+        }),
+        Comlink.proxy(() => {}),
+        null,
+      );
     } finally {
       setRunning(false);
     }
@@ -158,9 +147,9 @@ export function OverfitCurves() {
     <figure className="not-prose my-12 rounded-md border border-border bg-panel/60 p-5">
       <p className="sr-only">
         Interactive demo. A live line chart of two losses plotted across
-        training epochs. The solid green line is training loss and falls
-        monotonically; the dashed gold line is validation loss and, past
-        a certain epoch, starts climbing back up. The gap between the two
+        training epochs. The solid blue line is training loss and falls
+        monotonically; the dashed coral line is validation loss and, past a
+        certain epoch, starts climbing back up. The gap between the two
         lines is the magnitude of overfitting. The hidden-units slider
         rebuilds the network at the chosen width; wider networks produce
         wider gaps.
@@ -188,11 +177,18 @@ export function OverfitCurves() {
               Train
             </Button>
           ) : (
-            <Button variant="ghost" onClick={() => (stopRef.current = true)}>
+            <Button
+              variant="ghost"
+              onClick={() => trainerRef.current?.proxy.stop()}
+            >
               Stop
             </Button>
           )}
-          <Button variant="ghost" onClick={reset} disabled={running || !ready}>
+          <Button
+            variant="ghost"
+            onClick={() => void reset()}
+            disabled={running || !ready}
+          >
             Reset
           </Button>
         </div>

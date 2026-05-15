@@ -1,19 +1,9 @@
 "use client";
 
+import * as Comlink from "comlink";
 import { useCallback, useEffect, useRef, useState } from "react";
-import * as tf from "@tensorflow/tfjs";
+import { spawnTrainer, type TrainerHandle } from "@/lib/ml/workerClient";
 import {
-  makeSpirals,
-  shuffle,
-  trainValSplit,
-  type Dataset,
-  type Split,
-} from "@/lib/ml/data";
-import { augment } from "@/lib/ml/augment";
-import { buildMLP, safeDispose } from "@/lib/ml/model";
-import { train } from "@/lib/ml/train";
-import {
-  computeBoundary,
   paintBoundary,
   paintPoints,
   readThemeColor,
@@ -28,10 +18,8 @@ const EPOCHS = 150;
 
 export function DreamingNetwork() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const modelRef = useRef<tf.LayersModel | null>(null);
-  const splitRef = useRef<Split | null>(null);
-  const baseRef = useRef<Dataset | null>(null);
-  const stopRef = useRef(false);
+  const trainerRef = useRef<TrainerHandle | null>(null);
+  const pointsRef = useRef<{ xs: number[][]; ys: number[] } | null>(null);
   const initializedRef = useRef(false);
 
   const [useDropout, setUseDropout] = useState(false);
@@ -46,75 +34,90 @@ export function DreamingNetwork() {
   const [running, setRunning] = useState(false);
   const [ready, setReady] = useState(false);
 
-  const drawBoundary = useCallback(async () => {
+  const paint = useCallback((probs: Float32Array) => {
     const canvas = canvasRef.current;
-    const model = modelRef.current;
-    const split = splitRef.current;
-    if (!canvas || !model || !split) return;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const grid = await computeBoundary(model, RES, BOUNDS);
+    const grid = { width: RES, height: RES, ...BOUNDS, probs };
     ctx.fillStyle = readThemeColor("--color-bg-elev", "#ffffff");
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     paintBoundary(ctx, grid);
-    paintPoints(ctx, split.train.xs.slice(0, 300), split.train.ys.slice(0, 300), BOUNDS);
+    const pts = pointsRef.current;
+    if (pts)
+      paintPoints(ctx, pts.xs.slice(0, 300), pts.ys.slice(0, 300), BOUNDS);
   }, []);
 
+  const setup = useCallback(async () => {
+    const handle = trainerRef.current;
+    if (!handle) return;
+    await handle.proxy.setup(
+      {
+        hiddenLayers: 4,
+        hiddenUnits: 64,
+        dropout: useDropout ? dropout : 0,
+        inputNoiseStddev: useNoise ? noise : 0,
+      },
+      {
+        type: "spirals",
+        perClass: 150,
+        noise: 0.2,
+        valFrac: 0.25,
+        augmentCopies: useAugment ? 2 : 0,
+        augmentCfg: useAugment
+          ? { noiseSigma: 0.2, rotateRadians: 0.32, scaleJitter: 0.1 }
+          : undefined,
+      },
+    );
+    pointsRef.current = await handle.proxy.getTrainPoints();
+    const probs = await handle.proxy.predictGrid(RES, BOUNDS);
+    paint(probs);
+  }, [paint, dropout, noise, useAugment, useDropout, useNoise]);
+
   const reset = useCallback(async () => {
-    stopRef.current = true;
-    modelRef.current = safeDispose(modelRef.current);
-    if (!baseRef.current) baseRef.current = makeSpirals(150, 0.2);
-
-    let trainSet = baseRef.current;
-    if (useAugment) {
-      const dreamA = augment(baseRef.current, {
-        noiseSigma: 0.15,
-        rotateRadians: 0.25,
-        scaleJitter: 0.08,
-      });
-      const dreamB = augment(baseRef.current, {
-        noiseSigma: 0.25,
-        rotateRadians: 0.4,
-        scaleJitter: 0.12,
-      });
-      trainSet = shuffle({
-        xs: [...baseRef.current.xs, ...dreamA.xs, ...dreamB.xs],
-        ys: [...baseRef.current.ys, ...dreamA.ys, ...dreamB.ys],
-      });
-    }
-    splitRef.current = trainValSplit(trainSet, 0.25);
-
-    modelRef.current = buildMLP({
-      hiddenLayers: 4,
-      hiddenUnits: 64,
-      dropout: useDropout ? dropout : 0,
-      inputNoiseStddev: useNoise ? noise : 0,
-    });
-
-    stopRef.current = false;
+    if (!trainerRef.current) return;
+    trainerRef.current.proxy.stop();
     setEpoch(0);
     setLoss(null);
     setValLoss(null);
-    await drawBoundary();
-  }, [drawBoundary, dropout, noise, useAugment, useDropout, useNoise]);
+    await setup();
+  }, [setup]);
 
   useEffect(() => {
     let cancelled = false;
+    const handle = spawnTrainer();
+    trainerRef.current = handle;
     (async () => {
-      try {
-        await tf.setBackend("webgl");
-      } catch {
-        await tf.setBackend("cpu");
-      }
-      await tf.ready();
+      await handle.proxy.setup(
+        {
+          hiddenLayers: 4,
+          hiddenUnits: 64,
+          dropout: useDropout ? dropout : 0,
+          inputNoiseStddev: useNoise ? noise : 0,
+        },
+        {
+          type: "spirals",
+          perClass: 150,
+          noise: 0.2,
+          valFrac: 0.25,
+          augmentCopies: useAugment ? 2 : 0,
+          augmentCfg: useAugment
+            ? { noiseSigma: 0.2, rotateRadians: 0.32, scaleJitter: 0.1 }
+            : undefined,
+        },
+      );
+      pointsRef.current = await handle.proxy.getTrainPoints();
+      const probs = await handle.proxy.predictGrid(RES, BOUNDS);
       if (cancelled) return;
-      await reset();
+      paint(probs);
       setReady(true);
     })();
     return () => {
       cancelled = true;
-      stopRef.current = true;
-      modelRef.current = safeDispose(modelRef.current);
+      handle.proxy.stop();
+      handle.proxy.dispose();
+      handle.terminate();
+      trainerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -126,41 +129,29 @@ export function DreamingNetwork() {
       return;
     }
     if (running) return;
-    // Defer to a microtask so the effect commits before reset's setState
-    // calls fire (avoids the cascading-render lint rule).
-    const handle = queueMicrotask(() => {
+    queueMicrotask(() => {
       void reset();
     });
-    return () => {
-      // queueMicrotask returns void; nothing to cancel directly. The void
-      // assignment satisfies the unused-return-value rule.
-      void handle;
-    };
   }, [useDropout, useNoise, useAugment, dropout, noise, ready, running, reset]);
 
   const handleTrain = async () => {
-    if (running) return;
-    const model = modelRef.current;
-    const split = splitRef.current;
-    if (!model || !split) return;
+    if (running || !trainerRef.current) return;
     setRunning(true);
-    stopRef.current = false;
     try {
-      await train(model, split.train, split.val, {
-        epochs: EPOCHS,
-        batchSize: 32,
-        snapshotEvery: 5,
-        shouldStop: () => stopRef.current,
-        onEpoch: (u) => {
+      await trainerRef.current.proxy.train(
+        EPOCHS,
+        32,
+        5,
+        Comlink.proxy((u) => {
           setEpoch(u.epoch + 1);
           setLoss(u.loss);
           setValLoss(u.valLoss);
-        },
-        onSnapshot: async () => {
-          await drawBoundary();
-        },
-      });
-      await drawBoundary();
+        }),
+        Comlink.proxy((probs: Float32Array) => {
+          paint(probs);
+        }),
+        { resolution: RES, bounds: BOUNDS },
+      );
     } finally {
       setRunning(false);
     }
@@ -174,13 +165,12 @@ export function DreamingNetwork() {
         Interactive demo. The same network and dataset as the Act I spiral
         classifier, but with three toggles for dream-like regularization
         techniques: dropout (randomly silencing neurons), input noise
-        (perturbing inputs with gaussian static), and augmentation
-        (training on rotated and scaled variants of the data). Each
-        toggle is a structural analogue to a property of biological
-        dreaming. Toggling any combination rebuilds the network and
-        resets training; pressing Train re-fits the model and the
-        previously baroque decision boundary smooths into a more
-        generalizable shape.
+        (perturbing inputs with gaussian static), and augmentation (training
+        on rotated and scaled variants of the data). Each toggle is a
+        structural analogue to a property of biological dreaming. Toggling
+        any combination rebuilds the network and resets training; pressing
+        Train re-fits the model and the previously baroque decision boundary
+        smooths into a more generalizable shape.
       </p>
       <div className="relative aspect-square w-full overflow-hidden rounded-sm border border-border bg-background">
         <canvas
@@ -258,15 +248,16 @@ export function DreamingNetwork() {
               {anyDream ? "Train (with dreams)" : "Train"}
             </Button>
           ) : (
-            <Button variant="ghost" onClick={() => (stopRef.current = true)}>
+            <Button
+              variant="ghost"
+              onClick={() => trainerRef.current?.proxy.stop()}
+            >
               Stop
             </Button>
           )}
           <Button
             variant="ghost"
-            onClick={() => {
-              void reset();
-            }}
+            onClick={() => void reset()}
             disabled={running || !ready}
           >
             Reset
