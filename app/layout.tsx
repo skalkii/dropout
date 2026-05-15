@@ -4,6 +4,7 @@ import "katex/dist/katex.min.css";
 import "./globals.css";
 import { ThemeProvider, THEME_INIT_SCRIPT } from "./components/ThemeProvider";
 import { Header } from "./components/Header";
+import { SkipLink } from "./components/SkipLink";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -86,6 +87,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
+          <SkipLink />
           <Header />
           {children}
         </ThemeProvider>

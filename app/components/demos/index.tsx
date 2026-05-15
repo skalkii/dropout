@@ -1,6 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { ComponentType } from "react";
+import { DemoErrorBoundary } from "../DemoErrorBoundary";
 
 const placeholder = (
   <div
@@ -12,20 +14,34 @@ const placeholder = (
   </div>
 );
 
-export const SpiralClassifier = dynamic(
+const SpiralClassifierInner = dynamic(
   () =>
     import("./SpiralClassifier").then((m) => ({ default: m.SpiralClassifier })),
   { ssr: false, loading: () => placeholder },
 );
 
-export const OverfitCurves = dynamic(
+const OverfitCurvesInner = dynamic(
   () =>
     import("./OverfitCurves").then((m) => ({ default: m.OverfitCurves })),
   { ssr: false, loading: () => placeholder },
 );
 
-export const DreamingNetwork = dynamic(
+const DreamingNetworkInner = dynamic(
   () =>
     import("./DreamingNetwork").then((m) => ({ default: m.DreamingNetwork })),
   { ssr: false, loading: () => placeholder },
 );
+
+function wrap(Inner: ComponentType, label: string) {
+  return function Wrapped() {
+    return (
+      <DemoErrorBoundary demoLabel={label}>
+        <Inner />
+      </DemoErrorBoundary>
+    );
+  };
+}
+
+export const SpiralClassifier = wrap(SpiralClassifierInner, "spiral classifier");
+export const OverfitCurves = wrap(OverfitCurvesInner, "overfit curves");
+export const DreamingNetwork = wrap(DreamingNetworkInner, "dreaming network");
