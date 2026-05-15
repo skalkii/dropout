@@ -3,6 +3,7 @@ import { Prose } from "./components/Prose";
 import { ProgressRail } from "./components/ProgressRail";
 import { SpiralClassifier } from "./components/demos/SpiralClassifier";
 import { OverfitCurves } from "./components/demos/OverfitCurves";
+import { DreamingNetwork } from "./components/demos/DreamingNetwork";
 
 export default function Home() {
   return (
@@ -62,10 +63,8 @@ export default function Home() {
               that is almost-but-not-quite the world it knows. Watch the
               decision boundary smooth.
             </p>
-            <p className="text-muted italic">
-              [Interactive demo: DreamingNetwork — coming]
-            </p>
           </Prose>
+          <DreamingNetwork />
         </Act>
 
         <Act id="act-5" number={5} title="What This Means (And Doesn't)">
