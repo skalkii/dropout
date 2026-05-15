@@ -85,10 +85,95 @@ export default function Home() {
               solution — and that this solution is what we experience, every
               night, as dreaming.
             </p>
-            <p className="rounded-sm border border-dashed border-border/70 bg-panel/40 p-4 font-mono text-xs uppercase tracking-widest text-muted">
-              {`{{ACT_3_PROSE}}`} — author to write the main 600–800 word
-              philosophical exposition here. Paraphrase rather than direct
-              quote where possible.
+            <p>
+              The argument turns on a peculiar property of any system that
+              learns from experience. Such a system must extract regularities
+              from a finite, noisy sample and then apply those regularities to
+              a future it has not yet seen. The danger — call it the curse of
+              intelligence — is that the more flexible the learner, the more
+              easily it learns the noise along with the signal. A student who
+              memorizes every example in their textbook will fail an exam
+              built from new ones. A network trained too long on its training
+              set will fit every datapoint and generalize nothing. The brain,
+              Hoel argues, is exactly such a system, and faces exactly this
+              problem.
+            </p>
+            <p>
+              The standard responses in neuroscience have framed dreaming as
+              memory consolidation, threat simulation, emotional processing,
+              or epiphenomenal noise from the housekeeping work of sleep.
+              None has held up cleanly against the breadth of dream
+              phenomenology — the bizarreness, the recombinations of
+              unrelated experiences, the half-faces, the impossible
+              architectures, the persistent thematic concerns. There is a
+              tension in the consolidation view in particular: if dreams are
+              about storing or rehearsing experience, why are they so
+              unfaithful to it? Why is the dreaming brain so determined to
+              mangle the very experiences it is supposed to be preserving?
+            </p>
+            <p>
+              Hoel&apos;s answer is that the mangling is the point.
+            </p>
+            <p>
+              Modern deep networks face the overfitting curse and have grown
+              a toolkit to defeat it. <em>Dropout</em> silences random
+              neurons during training, forcing the network to build
+              representations that cannot rely on any single path through
+              the architecture. <em>Noise injection</em> perturbs the inputs
+              themselves, teaching the network to ignore variation that does
+              not predict the label. <em>Data augmentation</em> generates
+              rotated, scaled, distorted variants of the training examples
+              so the network sees a wider distribution than was ever in the
+              dataset. The three share a structural commitment: that
+              learning generalizes better when the learner is forced to
+              confront slightly-broken versions of the world it expects.
+            </p>
+            <p>
+              On the Overfitted Brain Hypothesis, biological dreams discharge
+              this same structural function. The wild distortions of dream
+              content — the sudden topic-shifts, the people who are also
+              other people, the geographies that fold in on themselves — are
+              precisely the kind of perturbed input a sleeping brain would
+              generate if its goal were to prevent its waking circuits from
+              over-specializing on the day&apos;s experience. The brain
+              dreams in order to keep generalizing.
+            </p>
+            <p>
+              The hypothesis makes specific predictions. Sensory deprivation,
+              which narrows the variety of incoming experience, should drive
+              the brain to compensate with more vivid imagery — and the
+              prisoner&apos;s-cinema reports of solitary confinement, the
+              hallucinations of long-haul truckers, and the imagery of
+              flotation-tank subjects all fit. Sleep deprivation, which
+              cancels the dream-augmentation pass, should impair
+              generalization more than rote memory; experimentally, exactly
+              that dissociation appears. Children, still building the
+              structure of their world, dream proportionally more than
+              adults; the elderly, whose models are settled, dream less.
+              Even the within-night architecture of REM and non-REM sleep —
+              concentrated dreaming late in the cycle, after consolidation
+              has done its day&apos;s work — fits the picture of a
+              generalization pass that runs once the storage pass is
+              complete.
+            </p>
+            <p>
+              None of this proves the hypothesis. The neuroscience of
+              dreaming is genuinely contested; the mechanisms of
+              generalization in deep networks are themselves an active
+              frontier; and a structural analogy between two systems is not,
+              on its own, evidence that they evolved for the same reason.
+              But the analogy is not idle. It is the kind of structural
+              parallel that, in the history of science, has tended to be
+              load-bearing. Vision evolved more than once. Wings evolved
+              many times. Solutions that work get rediscovered.
+            </p>
+            <p>
+              The reader is now in a position to do something the author
+              cannot do on their behalf. Scroll on to Act IV. Train the
+              network without dreams; train it with them. Watch the boundary
+              smooth. Then ask whether a brain — a hundred billion neurons,
+              four hundred million years of selection pressure behind it —
+              would really have failed to discover the same trick.
             </p>
           </Prose>
         </Act>
