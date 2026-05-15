@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as tf from "@tensorflow/tfjs";
 import { makeSpirals, trainValSplit, type Split } from "@/lib/ml/data";
-import { buildMLP } from "@/lib/ml/model";
+import { buildMLP, safeDispose } from "@/lib/ml/model";
 import { train } from "@/lib/ml/train";
 import {
   computeBoundary,
@@ -29,7 +29,7 @@ export function SpiralClassifier() {
 
   const reset = useCallback(async () => {
     stopRef.current = true;
-    modelRef.current?.dispose();
+    modelRef.current = safeDispose(modelRef.current);
     modelRef.current = buildMLP({ hiddenLayers: 4, hiddenUnits: 64 });
     splitRef.current = trainValSplit(makeSpirals(150, 0.2), 0.25);
     stopRef.current = false;
@@ -69,7 +69,7 @@ export function SpiralClassifier() {
     return () => {
       cancelled = true;
       stopRef.current = true;
-      modelRef.current?.dispose();
+      modelRef.current = safeDispose(modelRef.current);
     };
   }, [reset]);
 

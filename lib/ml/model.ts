@@ -1,5 +1,15 @@
 import * as tf from "@tensorflow/tfjs";
 
+export function safeDispose(model: tf.LayersModel | null | undefined): null {
+  if (!model) return null;
+  try {
+    model.dispose();
+  } catch {
+    // Already disposed (e.g. React Strict Mode double-mount); swallow.
+  }
+  return null;
+}
+
 export type ModelConfig = {
   hiddenLayers?: number;
   hiddenUnits?: number;

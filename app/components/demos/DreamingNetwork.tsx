@@ -10,7 +10,7 @@ import {
   type Split,
 } from "@/lib/ml/data";
 import { augment } from "@/lib/ml/augment";
-import { buildMLP } from "@/lib/ml/model";
+import { buildMLP, safeDispose } from "@/lib/ml/model";
 import { train } from "@/lib/ml/train";
 import {
   computeBoundary,
@@ -61,7 +61,7 @@ export function DreamingNetwork() {
 
   const reset = useCallback(async () => {
     stopRef.current = true;
-    modelRef.current?.dispose();
+    modelRef.current = safeDispose(modelRef.current);
     if (!baseRef.current) baseRef.current = makeSpirals(150, 0.2);
 
     let trainSet = baseRef.current;
@@ -113,7 +113,7 @@ export function DreamingNetwork() {
     return () => {
       cancelled = true;
       stopRef.current = true;
-      modelRef.current?.dispose();
+      modelRef.current = safeDispose(modelRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import uPlot, { type AlignedData, type Options } from "uplot";
 import * as tf from "@tensorflow/tfjs";
 import { makeSpirals, trainValSplit, type Split } from "@/lib/ml/data";
-import { buildMLP } from "@/lib/ml/model";
+import { buildMLP, safeDispose } from "@/lib/ml/model";
 import { train } from "@/lib/ml/train";
 import { Button } from "../ui/Button";
 import { Slider } from "../ui/Slider";
@@ -76,7 +76,7 @@ export function OverfitCurves() {
 
   const reset = useCallback(() => {
     stopRef.current = true;
-    modelRef.current?.dispose();
+    modelRef.current = safeDispose(modelRef.current);
     modelRef.current = buildMLP({
       hiddenLayers: 4,
       hiddenUnits: hidden,
@@ -106,7 +106,7 @@ export function OverfitCurves() {
       cancelled = true;
       stopRef.current = true;
       plotRef.current?.destroy();
-      modelRef.current?.dispose();
+      modelRef.current = safeDispose(modelRef.current);
     };
   }, [buildPlot, reset]);
 
