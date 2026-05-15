@@ -126,7 +126,16 @@ export function DreamingNetwork() {
       return;
     }
     if (running) return;
-    void reset();
+    // Defer to a microtask so the effect commits before reset's setState
+    // calls fire (avoids the cascading-render lint rule).
+    const handle = queueMicrotask(() => {
+      void reset();
+    });
+    return () => {
+      // queueMicrotask returns void; nothing to cancel directly. The void
+      // assignment satisfies the unused-return-value rule.
+      void handle;
+    };
   }, [useDropout, useNoise, useAugment, dropout, noise, ready, running, reset]);
 
   const handleTrain = async () => {

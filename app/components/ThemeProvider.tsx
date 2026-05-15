@@ -4,8 +4,8 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
-  useState,
+  useMemo,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
@@ -27,13 +27,6 @@ function readStored(): ThemeMode {
   return v === "light" || v === "dark" ? v : "system";
 }
 
-function systemPref(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
-
 function applyMode(mode: ThemeMode) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
@@ -41,37 +34,64 @@ function applyMode(mode: ThemeMode) {
   else root.setAttribute("data-theme", mode);
 }
 
+const STORAGE_EVENT = "dropout:theme-change";
+
+function subscribeMode(notify: () => void) {
+  if (typeof window === "undefined") return () => {};
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY) notify();
+  };
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(STORAGE_EVENT, notify);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(STORAGE_EVENT, notify);
+  };
+}
+
+function subscribeSystemPref(notify: () => void) {
+  if (typeof window === "undefined") return () => {};
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener("change", notify);
+  return () => mq.removeEventListener("change", notify);
+}
+
+function getSystemPref(): "light" | "dark" {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>("system");
-  const [resolved, setResolved] = useState<"light" | "dark">("light");
+  const mode = useSyncExternalStore<ThemeMode>(
+    subscribeMode,
+    readStored,
+    () => "system",
+  );
 
-  useEffect(() => {
-    const initial = readStored();
-    setModeState(initial);
-    applyMode(initial);
-    setResolved(initial === "system" ? systemPref() : initial);
-  }, []);
+  const systemPref = useSyncExternalStore<"light" | "dark">(
+    subscribeSystemPref,
+    getSystemPref,
+    () => "light",
+  );
 
-  useEffect(() => {
-    if (mode !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => setResolved(mq.matches ? "dark" : "light");
-    onChange();
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, [mode]);
+  const resolved = mode === "system" ? systemPref : mode;
 
   const setMode = useCallback((m: ThemeMode) => {
-    setModeState(m);
-    applyMode(m);
+    if (typeof window === "undefined") return;
     if (m === "system") window.localStorage.removeItem(STORAGE_KEY);
     else window.localStorage.setItem(STORAGE_KEY, m);
-    setResolved(m === "system" ? systemPref() : m);
+    applyMode(m);
+    window.dispatchEvent(new Event(STORAGE_EVENT));
   }, []);
 
-  return (
-    <Ctx.Provider value={{ mode, resolved, setMode }}>{children}</Ctx.Provider>
+  const value = useMemo(
+    () => ({ mode, resolved, setMode }),
+    [mode, resolved, setMode],
   );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useTheme(): ThemeCtx {

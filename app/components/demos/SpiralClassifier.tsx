@@ -28,18 +28,6 @@ export function SpiralClassifier() {
   const [ready, setReady] = useState(false);
   const epochsTarget = 200;
 
-  const reset = useCallback(async () => {
-    stopRef.current = true;
-    modelRef.current = safeDispose(modelRef.current);
-    modelRef.current = buildMLP({ hiddenLayers: 4, hiddenUnits: 64 });
-    splitRef.current = trainValSplit(makeSpirals(150, 0.2), 0.25);
-    stopRef.current = false;
-    setEpoch(0);
-    setLoss(null);
-    setValLoss(null);
-    await drawBoundary();
-  }, []);
-
   const drawBoundary = useCallback(async () => {
     const canvas = canvasRef.current;
     const model = modelRef.current;
@@ -53,6 +41,18 @@ export function SpiralClassifier() {
     paintBoundary(ctx, grid);
     paintPoints(ctx, split.train.xs, split.train.ys, BOUNDS);
   }, []);
+
+  const reset = useCallback(async () => {
+    stopRef.current = true;
+    modelRef.current = safeDispose(modelRef.current);
+    modelRef.current = buildMLP({ hiddenLayers: 4, hiddenUnits: 64 });
+    splitRef.current = trainValSplit(makeSpirals(150, 0.2), 0.25);
+    stopRef.current = false;
+    setEpoch(0);
+    setLoss(null);
+    setValLoss(null);
+    await drawBoundary();
+  }, [drawBoundary]);
 
   useEffect(() => {
     let cancelled = false;
