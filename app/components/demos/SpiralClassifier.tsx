@@ -106,6 +106,15 @@ export function SpiralClassifier() {
 
   return (
     <figure className="not-prose my-12 rounded-md border border-border bg-panel/60 p-5">
+      <p className="sr-only">
+        Interactive demo. A four-layer neural network is trained on a noisy
+        two-class spiral pattern entirely in your browser. Pressing Train
+        starts a 200-epoch run; the network&apos;s predicted decision
+        boundary appears as a colored gradient under the data points and
+        updates every five epochs. With no regularization the boundary
+        becomes ornate and tightly wrapped around each training point —
+        the visual signature of overfitting.
+      </p>
       <div className="relative aspect-square w-full overflow-hidden rounded-sm border border-border bg-background">
         <canvas
           ref={canvasRef}

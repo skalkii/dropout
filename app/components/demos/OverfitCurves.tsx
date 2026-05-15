@@ -151,6 +151,15 @@ export function OverfitCurves() {
 
   return (
     <figure className="not-prose my-12 rounded-md border border-border bg-panel/60 p-5">
+      <p className="sr-only">
+        Interactive demo. A live line chart of two losses plotted across
+        training epochs. The solid green line is training loss and falls
+        monotonically; the dashed gold line is validation loss and, past
+        a certain epoch, starts climbing back up. The gap between the two
+        lines is the magnitude of overfitting. The hidden-units slider
+        rebuilds the network at the chosen width; wider networks produce
+        wider gaps.
+      </p>
       <div
         ref={hostRef}
         className="w-full"

@@ -154,6 +154,18 @@ export function DreamingNetwork() {
 
   return (
     <figure className="not-prose my-12 rounded-md border border-border bg-panel/60 p-5">
+      <p className="sr-only">
+        Interactive demo. The same network and dataset as the Act I spiral
+        classifier, but with three toggles for dream-like regularization
+        techniques: dropout (randomly silencing neurons), input noise
+        (perturbing inputs with gaussian static), and augmentation
+        (training on rotated and scaled variants of the data). Each
+        toggle is a structural analogue to a property of biological
+        dreaming. Toggling any combination rebuilds the network and
+        resets training; pressing Train re-fits the model and the
+        previously baroque decision boundary smooths into a more
+        generalizable shape.
+      </p>
       <div className="relative aspect-square w-full overflow-hidden rounded-sm border border-border bg-background">
         <canvas
           ref={canvasRef}
