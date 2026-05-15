@@ -47,19 +47,17 @@ export function ProgressRail() {
             <li key={act.id}>
               <a
                 href={`#${act.id}`}
-                className="pointer-events-auto group flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[--color-muted] transition-colors hover:text-[--color-fg]"
+                className="pointer-events-auto group flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted transition-colors hover:text-foreground"
                 aria-current={isActive ? "true" : undefined}
               >
                 <span
                   className={`inline-block h-px transition-all duration-300 ${
                     isActive
-                      ? "w-10 bg-[--color-accent]"
-                      : "w-5 bg-[--color-muted]/40 group-hover:w-7"
+                      ? "w-10 bg-accent"
+                      : "w-5 bg-muted/40 group-hover:w-7"
                   }`}
                 />
-                <span
-                  className={isActive ? "text-[--color-accent]" : undefined}
-                >
+                <span className={isActive ? "text-accent" : undefined}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </a>
