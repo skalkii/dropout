@@ -2,6 +2,7 @@ import { Act } from "./components/Act";
 import { Prose } from "./components/Prose";
 import { ProgressRail } from "./components/ProgressRail";
 import { SpiralClassifier } from "./components/demos/SpiralClassifier";
+import { OverfitCurves } from "./components/demos/OverfitCurves";
 
 export default function Home() {
   return (
@@ -41,10 +42,8 @@ export default function Home() {
               certain point, starts climbing. The gap between them is the
               shape of overfitting.
             </p>
-            <p className="text-muted italic">
-              [Interactive demo: OverfitCurves — coming]
-            </p>
           </Prose>
+          <OverfitCurves />
         </Act>
 
         <Act id="act-3" number={3} title="The Hoel Hypothesis">
