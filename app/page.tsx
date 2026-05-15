@@ -1,6 +1,7 @@
 import { Act } from "./components/Act";
 import { Prose } from "./components/Prose";
 import { ProgressRail } from "./components/ProgressRail";
+import { SpiralClassifier } from "./components/demos/SpiralClassifier";
 
 export default function Home() {
   return (
@@ -28,10 +29,8 @@ export default function Home() {
               fits noise as eagerly as signal. The brain, Hoel argues, has
               the same problem and has evolved the same kind of fix.
             </p>
-            <p className="text-muted italic">
-              [Interactive demo: SpiralClassifier — coming next commit]
-            </p>
           </Prose>
+          <SpiralClassifier />
         </Act>
 
         <Act id="act-2" number={2} title="What Networks Forget">
