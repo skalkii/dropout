@@ -2,9 +2,11 @@ import { Act } from "./components/Act";
 import { Prose } from "./components/Prose";
 import { ProgressRail } from "./components/ProgressRail";
 import { InlineMath } from "./components/Math";
-import { SpiralClassifier } from "./components/demos/SpiralClassifier";
-import { OverfitCurves } from "./components/demos/OverfitCurves";
-import { DreamingNetwork } from "./components/demos/DreamingNetwork";
+import {
+  DreamingNetwork,
+  OverfitCurves,
+  SpiralClassifier,
+} from "./components/demos";
 
 export default function Home() {
   return (
