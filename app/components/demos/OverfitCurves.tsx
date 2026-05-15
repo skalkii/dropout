@@ -8,6 +8,7 @@ import * as tf from "@tensorflow/tfjs";
 import { makeSpirals, trainValSplit, type Split } from "@/lib/ml/data";
 import { buildMLP, safeDispose } from "@/lib/ml/model";
 import { train } from "@/lib/ml/train";
+import { readThemeColor } from "@/lib/viz/decisionBoundary";
 import { Button } from "../ui/Button";
 import { Slider } from "../ui/Slider";
 
@@ -29,10 +30,14 @@ export function OverfitCurves() {
     if (!hostRef.current) return;
     plotRef.current?.destroy();
     const rect = hostRef.current.getBoundingClientRect();
+    const axisColor = readThemeColor("--color-muted", "#857f76");
+    const gridColor = readThemeColor("--color-border", "#e0dbcf");
+    const trainColor = "#4a6b8a";
+    const valColor = readThemeColor("--color-accent", "#c96442");
     const opts: Options = {
-      width: Math.max(320, Math.floor(rect.width)),
-      height: 220,
-      padding: [10, 16, 8, 16],
+      width: Math.max(280, Math.floor(rect.width)),
+      height: 240,
+      padding: [12, 16, 8, 16],
       legend: { show: true, live: false },
       scales: {
         x: { time: false },
@@ -40,17 +45,17 @@ export function OverfitCurves() {
       },
       axes: [
         {
-          stroke: "#8b8a86",
-          grid: { stroke: "#1f2440" },
-          ticks: { stroke: "#1f2440" },
+          stroke: axisColor,
+          grid: { stroke: gridColor },
+          ticks: { stroke: gridColor },
           font: "10px ui-monospace, monospace",
           label: "epoch",
           labelFont: "10px ui-monospace, monospace",
         },
         {
-          stroke: "#8b8a86",
-          grid: { stroke: "#1f2440" },
-          ticks: { stroke: "#1f2440" },
+          stroke: axisColor,
+          grid: { stroke: gridColor },
+          ticks: { stroke: gridColor },
           font: "10px ui-monospace, monospace",
           label: "loss",
           labelFont: "10px ui-monospace, monospace",
@@ -60,13 +65,13 @@ export function OverfitCurves() {
         { label: "epoch" },
         {
           label: "train",
-          stroke: "#7ab48b",
-          width: 1.5,
+          stroke: trainColor,
+          width: 1.75,
         },
         {
           label: "validation",
-          stroke: "#c9a86a",
-          width: 1.5,
+          stroke: valColor,
+          width: 1.75,
           dash: [4, 4],
         },
       ],
@@ -115,7 +120,7 @@ export function OverfitCurves() {
     const obs = new ResizeObserver(() => {
       if (!hostRef.current || !plotRef.current) return;
       const w = Math.max(320, Math.floor(hostRef.current.getBoundingClientRect().width));
-      plotRef.current.setSize({ width: w, height: 220 });
+      plotRef.current.setSize({ width: w, height: 240 });
     });
     obs.observe(hostRef.current);
     return () => obs.disconnect();

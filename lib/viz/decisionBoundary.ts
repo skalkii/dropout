@@ -46,13 +46,20 @@ export async function computeBoundary(
   };
 }
 
+export type Palette = {
+  lo: [number, number, number];
+  hi: [number, number, number];
+};
+
+export const PALETTE: Palette = {
+  lo: [74, 107, 138], // muted slate-blue (class 0)
+  hi: [201, 100, 66], // claude coral (class 1)
+};
+
 export function paintBoundary(
   ctx: CanvasRenderingContext2D,
   grid: BoundaryGrid,
-  palette: { lo: [number, number, number]; hi: [number, number, number] } = {
-    lo: [78, 102, 186],
-    hi: [201, 168, 106],
-  },
+  palette: Palette = PALETTE,
 ): void {
   const { width, height, probs } = grid;
   const cssW = ctx.canvas.width;
@@ -70,7 +77,7 @@ export function paintBoundary(
       img.data[idx] = r;
       img.data[idx + 1] = g;
       img.data[idx + 2] = b;
-      img.data[idx + 3] = 90;
+      img.data[idx + 3] = 110;
     }
   }
   ctx.putImageData(img, 0, 0);
@@ -81,22 +88,32 @@ export function paintPoints(
   xs: number[][],
   ys: number[],
   bounds: { xMin: number; xMax: number; yMin: number; yMax: number },
-  palette: { lo: [number, number, number]; hi: [number, number, number] } = {
-    lo: [78, 102, 186],
-    hi: [201, 168, 106],
-  },
+  palette: Palette = PALETTE,
 ): void {
   const { xMin, xMax, yMin, yMax } = bounds;
   const cssW = ctx.canvas.width;
   const cssH = ctx.canvas.height;
+  ctx.lineWidth = 1;
   for (let i = 0; i < xs.length; i++) {
     const [x, y] = xs[i];
     const px = ((x - xMin) / (xMax - xMin)) * cssW;
     const py = ((y - yMin) / (yMax - yMin)) * cssH;
     const c = ys[i] === 0 ? palette.lo : palette.hi;
     ctx.fillStyle = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+    ctx.strokeStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, 0.35)`;
     ctx.beginPath();
-    ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+    ctx.arc(px, py, 3, 0, Math.PI * 2);
     ctx.fill();
+    ctx.beginPath();
+    ctx.arc(px, py, 4.2, 0, Math.PI * 2);
+    ctx.stroke();
   }
+}
+
+export function readThemeColor(name: string, fallback: string): string {
+  if (typeof window === "undefined") return fallback;
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return v || fallback;
 }

@@ -27,9 +27,9 @@ export function Slider({
     onChange(Number(e.target.value));
   return (
     <label className="block">
-      <div className="mb-1.5 flex items-baseline justify-between font-mono text-[11px] uppercase tracking-widest text-muted">
+      <div className="mb-1.5 flex items-baseline justify-between font-sans text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
         <span>{label}</span>
-        <span className="text-foreground tabular-nums">
+        <span className="font-mono text-foreground tabular-nums">
           {format ? format(value) : value}
         </span>
       </div>
@@ -41,7 +41,7 @@ export function Slider({
         value={value}
         onChange={handle}
         disabled={disabled}
-        className="h-1 w-full cursor-pointer appearance-none rounded-full bg-border accent-[#c9a86a] disabled:cursor-not-allowed disabled:opacity-50"
+        className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-accent disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       />
     </label>
   );

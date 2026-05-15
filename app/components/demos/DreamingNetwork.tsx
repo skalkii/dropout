@@ -16,6 +16,7 @@ import {
   computeBoundary,
   paintBoundary,
   paintPoints,
+  readThemeColor,
 } from "@/lib/viz/decisionBoundary";
 import { Button } from "../ui/Button";
 import { Slider } from "../ui/Slider";
@@ -53,7 +54,7 @@ export function DreamingNetwork() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const grid = await computeBoundary(model, RES, BOUNDS);
-    ctx.fillStyle = "#0a0c1a";
+    ctx.fillStyle = readThemeColor("--color-bg-elev", "#ffffff");
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     paintBoundary(ctx, grid);
     paintPoints(ctx, split.train.xs.slice(0, 300), split.train.ys.slice(0, 300), BOUNDS);

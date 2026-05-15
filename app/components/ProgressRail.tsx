@@ -47,14 +47,14 @@ export function ProgressRail() {
             <li key={act.id}>
               <a
                 href={`#${act.id}`}
-                className="pointer-events-auto group flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted transition-colors hover:text-foreground"
+                className="pointer-events-auto group flex items-center gap-3 font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:text-foreground"
                 aria-current={isActive ? "true" : undefined}
               >
                 <span
-                  className={`inline-block h-px transition-all duration-300 ${
+                  className={`inline-block h-[2px] rounded-full transition-all duration-300 ${
                     isActive
                       ? "w-10 bg-accent"
-                      : "w-5 bg-muted/40 group-hover:w-7"
+                      : "w-5 bg-border-strong/70 group-hover:w-7 group-hover:bg-foreground/40"
                   }`}
                 />
                 <span className={isActive ? "text-accent" : undefined}>

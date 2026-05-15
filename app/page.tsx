@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <>
       <ProgressRail />
-      <main className="mx-auto w-full max-w-3xl px-6 md:px-8">
+      <main className="mx-auto w-full max-w-3xl px-5 sm:px-6 lg:px-8">
         <NarrowScreenNotice />
         <Hero />
 
@@ -253,32 +253,31 @@ export default function Home() {
 
 function NarrowScreenNotice() {
   return (
-    <div className="mt-6 hidden rounded-sm border border-border bg-panel/60 p-3 text-xs text-muted max-[379px]:block">
-      The interactive demos are usable here, but they were designed for a
-      wider screen. For the best experience, view this essay on a tablet or
-      laptop.
+    <div className="mt-5 hidden rounded-md border border-border bg-panel/70 p-3 text-xs leading-snug text-foreground-soft max-[379px]:block">
+      The interactive demos work here, but they were designed for a wider
+      screen. For the full experience, open this essay on a tablet or laptop.
     </div>
   );
 }
 
 function Hero() {
   return (
-    <header className="flex min-h-[80vh] flex-col justify-center py-24">
-      <p className="font-mono text-xs uppercase tracking-[0.25em] text-accent">
+    <header className="flex min-h-[88vh] flex-col justify-center py-20 sm:py-24">
+      <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
         An interactive essay
       </p>
-      <h1 className="mt-6 font-serif text-5xl leading-[1.05] tracking-tight md:text-7xl">
+      <h1 className="mt-6 font-serif text-[clamp(3rem,2rem+8vw,6.5rem)] font-medium leading-[1.02] tracking-[-0.025em] text-foreground">
         Dropout.
       </h1>
-      <p className="mt-8 max-w-xl text-xl leading-relaxed text-foreground/85 md:text-2xl">
+      <p className="mt-7 max-w-2xl font-serif text-[clamp(1.15rem,1rem+0.8vw,1.6rem)] leading-snug text-foreground-soft sm:mt-8">
         Watch a neural network overfit, then watch it dream.
       </p>
-      <p className="mt-6 max-w-xl text-muted">
+      <p className="mt-5 max-w-xl text-base text-muted sm:text-[17px]">
         On Erik Hoel&apos;s Overfitted Brain Hypothesis — and what biological
         dreams and machine-learning regularization may have in common.
       </p>
-      <p className="mt-10 font-mono text-[11px] uppercase tracking-widest text-muted">
-        Scroll to begin →
+      <p className="mt-10 font-sans text-[11px] font-medium uppercase tracking-[0.18em] text-muted">
+        Scroll to begin <span aria-hidden>↓</span>
       </p>
     </header>
   );
@@ -286,21 +285,21 @@ function Hero() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border py-16 text-sm text-muted">
-      <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-accent">
+    <footer className="border-t border-border py-16 text-sm leading-relaxed text-foreground-soft">
+      <p className="mb-4 font-sans text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
         Further reading
       </p>
-      <ul className="space-y-2">
+      <ul className="space-y-2.5">
         <li>
-          Hoel, E. (2021). <em>The overfitted brain: Dreams evolved to assist
-          generalization.</em> Patterns, 2(5).
+          Hoel, E. (2021). <em>The overfitted brain: Dreams evolved to
+          assist generalization.</em> Patterns, 2(5).
         </li>
         <li>Andy Clark, <em>Surfing Uncertainty</em>. MIT Press, 2016.</li>
         <li>
           The TensorFlow.js playground —{" "}
           <a
             href="https://playground.tensorflow.org/"
-            className="text-accent underline underline-offset-4"
+            className="text-accent underline underline-offset-[3px] decoration-accent/40 hover:decoration-accent"
             target="_blank"
             rel="noreferrer"
           >

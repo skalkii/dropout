@@ -13,13 +13,13 @@ export function Act({ id, number, title, children }: ActProps) {
     <section
       id={id}
       data-act={id}
-      className="scroll-mt-24 border-t border-border py-24 md:py-32"
+      className="scroll-mt-24 border-t border-border py-20 md:py-28 lg:py-32"
     >
-      <header className="mx-auto mb-12 max-w-prose">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
+      <header className="mx-auto mb-10 max-w-prose md:mb-14">
+        <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
           Act {roman}
         </p>
-        <h2 className="mt-3 font-serif text-3xl leading-tight text-foreground md:text-4xl">
+        <h2 className="mt-3 font-serif text-[clamp(1.85rem,1.4rem+1.8vw,3rem)] font-medium leading-[1.15] tracking-[-0.01em] text-foreground">
           {title}
         </h2>
       </header>
