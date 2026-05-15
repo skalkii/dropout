@@ -4,6 +4,7 @@ export type ModelConfig = {
   hiddenLayers?: number;
   hiddenUnits?: number;
   dropout?: number;
+  inputNoiseStddev?: number;
   l2?: number;
   inputDim?: number;
   outputUnits?: number;
@@ -14,6 +15,7 @@ export function buildMLP(cfg: ModelConfig = {}): tf.LayersModel {
     hiddenLayers = 4,
     hiddenUnits = 64,
     dropout = 0,
+    inputNoiseStddev = 0,
     l2 = 0,
     inputDim = 2,
     outputUnits = 1,
@@ -22,14 +24,30 @@ export function buildMLP(cfg: ModelConfig = {}): tf.LayersModel {
   const reg = l2 > 0 ? tf.regularizers.l2({ l2 }) : undefined;
   const model = tf.sequential();
 
-  model.add(
-    tf.layers.dense({
-      inputShape: [inputDim],
-      units: hiddenUnits,
-      activation: "relu",
-      kernelRegularizer: reg,
-    }),
-  );
+  if (inputNoiseStddev > 0) {
+    model.add(
+      tf.layers.gaussianNoise({
+        inputShape: [inputDim],
+        stddev: inputNoiseStddev,
+      }),
+    );
+    model.add(
+      tf.layers.dense({
+        units: hiddenUnits,
+        activation: "relu",
+        kernelRegularizer: reg,
+      }),
+    );
+  } else {
+    model.add(
+      tf.layers.dense({
+        inputShape: [inputDim],
+        units: hiddenUnits,
+        activation: "relu",
+        kernelRegularizer: reg,
+      }),
+    );
+  }
   if (dropout > 0) model.add(tf.layers.dropout({ rate: dropout }));
 
   for (let i = 1; i < hiddenLayers; i++) {
