@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 /* Claude-inspired palette: warm cream + coral accent.
-   Light by default; pairs with prefers-color-scheme: dark below. */
+   Light by default. Explicit [data-theme="dark"] forces dark.
+   No data-theme attribute → follow system preference. */
 :root {
   --color-bg: #faf9f5;
   --color-bg-elev: #ffffff;
@@ -18,11 +19,13 @@
   --color-success-soft: rgba(90, 138, 107, 0.18);
   --color-danger: #b04a2f;
 
-  --shadow-card: 0 1px 2px rgba(28, 26, 22, 0.04), 0 4px 16px rgba(28, 26, 22, 0.04);
+  --shadow-card: 0 1px 2px rgba(28, 26, 22, 0.04),
+    0 4px 16px rgba(28, 26, 22, 0.04);
 }
 
+/* dark via OS preference, unless the user explicitly chose light */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-bg: #262624;
     --color-bg-elev: #2f2e2c;
     --color-fg: #f0ede4;
@@ -38,8 +41,30 @@
     --color-success-soft: rgba(122, 180, 139, 0.18);
     --color-danger: #d97757;
 
-    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.25);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25),
+      0 4px 16px rgba(0, 0, 0, 0.25);
   }
+}
+
+/* explicit dark override regardless of OS */
+[data-theme="dark"] {
+  --color-bg: #262624;
+  --color-bg-elev: #2f2e2c;
+  --color-fg: #f0ede4;
+  --color-fg-soft: #d8d3c5;
+  --color-muted: #9a9489;
+  --color-panel: #2f2e2c;
+  --color-border: #3e3b36;
+  --color-border-strong: #524e47;
+  --color-accent: #d97757;
+  --color-accent-soft: rgba(217, 119, 87, 0.18);
+  --color-on-accent: #1a1815;
+  --color-success: #7ab48b;
+  --color-success-soft: rgba(122, 180, 139, 0.18);
+  --color-danger: #d97757;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25),
+    0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 @theme inline {
@@ -84,7 +109,6 @@ body {
   color: var(--color-fg);
 }
 
-/* Honor reduced-motion preference site-wide. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

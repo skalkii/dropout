@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter, Source_Serif_4 } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
+import { ThemeProvider, THEME_INIT_SCRIPT } from "./components/ThemeProvider";
+import { Header } from "./components/Header";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -75,8 +77,19 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${sourceSerif.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col">
+        <ThemeProvider>
+          <Header />
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

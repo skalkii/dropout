@@ -1,4 +1,5 @@
 import { Act } from "./components/Act";
+import { Logo } from "./components/Logo";
 import { Prose } from "./components/Prose";
 import { ProgressRail } from "./components/ProgressRail";
 import { InlineMath } from "./components/Math";
@@ -12,7 +13,10 @@ export default function Home() {
   return (
     <>
       <ProgressRail />
-      <main className="mx-auto w-full max-w-3xl px-5 sm:px-6 lg:px-8">
+      <main
+        id="top"
+        className="mx-auto w-full max-w-5xl px-5 pt-16 sm:px-6 lg:px-12 lg:pt-20"
+      >
         <NarrowScreenNotice />
         <Hero />
 
@@ -285,31 +289,67 @@ function Hero() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border py-16 text-sm leading-relaxed text-foreground-soft">
-      <p className="mb-4 font-sans text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-        Further reading
-      </p>
-      <ul className="space-y-2.5">
-        <li>
-          Hoel, E. (2021). <em>The overfitted brain: Dreams evolved to
-          assist generalization.</em> Patterns, 2(5).
-        </li>
-        <li>Andy Clark, <em>Surfing Uncertainty</em>. MIT Press, 2016.</li>
-        <li>
-          The TensorFlow.js playground —{" "}
-          <a
-            href="https://playground.tensorflow.org/"
-            className="text-accent underline underline-offset-[3px] decoration-accent/40 hover:decoration-accent"
-            target="_blank"
-            rel="noreferrer"
-          >
-            playground.tensorflow.org
-          </a>
-          .
-        </li>
-      </ul>
-      <p className="mt-8 text-xs text-muted">
-        All training runs in your browser. Nothing leaves the page.
+    <footer className="mt-12 border-t border-border py-14 text-sm leading-relaxed text-foreground-soft">
+      <div className="grid gap-10 md:grid-cols-[1fr_2fr] md:gap-16">
+        <div>
+          <Logo size={28} />
+          <p className="mt-4 max-w-xs text-foreground-soft">
+            An interactive essay on Erik Hoel&apos;s Overfitted Brain
+            Hypothesis.
+          </p>
+          <p className="mt-5 text-xs text-muted">
+            All training runs in your browser. Nothing leaves the page.
+          </p>
+        </div>
+
+        <div className="grid gap-8 sm:grid-cols-2">
+          <div>
+            <p className="mb-3 font-sans text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+              Further reading
+            </p>
+            <ul className="space-y-2.5">
+              <li>
+                Hoel, E. (2021). <em>The overfitted brain: Dreams evolved
+                to assist generalization.</em> Patterns, 2(5).
+              </li>
+              <li>
+                Andy Clark, <em>Surfing Uncertainty</em>. MIT Press, 2016.
+              </li>
+            </ul>
+          </div>
+          <div>
+            <p className="mb-3 font-sans text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+              Links
+            </p>
+            <ul className="space-y-2.5">
+              <li>
+                <a
+                  href="https://playground.tensorflow.org/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-foreground transition-colors hover:text-accent"
+                >
+                  TensorFlow.js playground →
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/skalkii/dropout"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-foreground transition-colors hover:text-accent"
+                >
+                  Source on GitHub →
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <p className="mt-12 border-t border-border pt-8 text-xs text-muted">
+        © {new Date().getFullYear()} Dropout. Built with Next.js,
+        TensorFlow.js, and a serif font.
       </p>
     </footer>
   );
