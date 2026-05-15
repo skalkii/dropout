@@ -11,6 +11,7 @@ export default function Home() {
     <>
       <ProgressRail />
       <main className="mx-auto w-full max-w-3xl px-6 md:px-8">
+        <NarrowScreenNotice />
         <Hero />
 
         <Act
@@ -131,6 +132,16 @@ export default function Home() {
         <Footer />
       </main>
     </>
+  );
+}
+
+function NarrowScreenNotice() {
+  return (
+    <div className="mt-6 hidden rounded-sm border border-border bg-panel/60 p-3 text-xs text-muted max-[379px]:block">
+      The interactive demos are usable here, but they were designed for a
+      wider screen. For the best experience, view this essay on a tablet or
+      laptop.
+    </div>
   );
 }
 
