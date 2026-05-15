@@ -31,6 +31,7 @@ export function DreamingNetwork() {
   const splitRef = useRef<Split | null>(null);
   const baseRef = useRef<Dataset | null>(null);
   const stopRef = useRef(false);
+  const initializedRef = useRef(false);
 
   const [useDropout, setUseDropout] = useState(false);
   const [dropout, setDropout] = useState(0.2);
@@ -118,7 +119,12 @@ export function DreamingNetwork() {
   }, []);
 
   useEffect(() => {
-    if (!ready || running) return;
+    if (!ready) return;
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      return;
+    }
+    if (running) return;
     void reset();
   }, [useDropout, useNoise, useAugment, dropout, noise, ready, running, reset]);
 
